@@ -1,40 +1,55 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { DeleteResult } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './interfaces/user.interface';
+import { User } from './entities/user.entities';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
-    // sign up, sign in, findid, edit_user
+
+    // @Post()
+    // testing() {
+    //     const user = new User()
+    //     user.firstName = "woojin"
+    //     user.lastName = "Shim"
+
+    //     this.usersService.testing([user])
+    // }
     @Post('signup')
-    signup(@Body() createUserDto: CreateUserDto): User {
+    signup(@Body() createUserDto: CreateUserDto): Promise<User> {
         return this.usersService.signup(createUserDto)
     }
 
     @Post('signin')
-    signin(@Body() createUserDto: CreateUserDto): boolean {
+    signin(@Body() createUserDto: CreateUserDto): Promise<User> {
         return this.usersService.signin(createUserDto)
-    }
+    } 
 
     @Get()
-    getList(): User[] {
+    getList(): Promise<User[]> {
         return this.usersService.findAll()
     }
 
     @Get(':user_idx')
-    findId(
+    findById(
         @Param('user_idx', new ParseIntPipe()) user_idx: number,
-    ): string {
+    ): Promise<User> {
         console.log('id: ', user_idx)
-        return this.usersService.findId(user_idx)
+        return this.usersService.findById(user_idx)
     }
 
     @Patch()
-    editUser(@Body() updateUserDto: UpdateUserDto): any {
+    editUser(@Body() updateUserDto: UpdateUserDto): Promise<any> {
         return this.usersService.updateUser(updateUserDto)
+    }
+
+    @Delete(':user_idx')
+    remove(@Param('user_idx', new ParseIntPipe()) user_idx: number): Promise<DeleteResult> {
+        console.log(`id ${user_idx} is removed`)
+        return this.usersService.remove(user_idx)
     }
 }
